@@ -1,18 +1,18 @@
-package frc.robot;
+package frc.robot.spinner;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.GameCommand;
 
 import java.util.Set;
 
-public class Spinner extends SubsystemBase {
+public class Spinner extends SubsystemBase implements SpinnerIO {
     private CANSparkMax motor;
     private GameCommand[] games;
 
@@ -21,13 +21,8 @@ public class Spinner extends SubsystemBase {
         motor.setIdleMode(IdleMode.kCoast);
         this.games = games;
     }
-
-    public void periodic() {
-        SmartDashboard.putNumber("Motor Position", Math.abs(motor.getEncoder().getPosition() % 1));
-        SmartDashboard.putNumber("Index", (int) (Math.abs(motor.getEncoder().getPosition() % 1) * games.length));
-    }
     
-    public Command startSpin() {
+    public Command spin() {
         return Commands.runOnce(
             () -> {
                 motor.setVoltage(2);
@@ -37,7 +32,7 @@ public class Spinner extends SubsystemBase {
         ).finallyDo(() -> endSpin().schedule());
     }
 
-    public Command endSpin() {
+    private Command endSpin() {
         return Commands.runOnce(
             () -> {
                 motor.setVoltage(0);
@@ -45,8 +40,7 @@ public class Spinner extends SubsystemBase {
         ).andThen(
             Commands.waitSeconds(0.5)
         ).andThen(
-            Commands.waitUntil(() -> Math.abs(motor.getEncoder().getVelocity()) < 5),
-            Commands.print("Going to game")
+            Commands.waitUntil(() -> Math.abs(motor.getEncoder().getVelocity()) < 5)
         ).andThen(
             Commands.defer(() -> {
                 CommandScheduler.getInstance().clearComposedCommands();
@@ -55,7 +49,7 @@ public class Spinner extends SubsystemBase {
         );
     }
 
-    public Command getNextGame() {
+    private Command getNextGame() {
         double position = Math.abs(motor.getEncoder().getPosition() % 1);
         return games[(int) (position * games.length)];
     }
