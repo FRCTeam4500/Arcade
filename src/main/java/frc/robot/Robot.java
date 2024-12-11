@@ -10,7 +10,6 @@ public class Robot extends TimedRobot {
     public Robot() {
         spinner = new Spinner(new NameSayer());
         SmartDashboard.putData("Spin Button", spinner.startSpin());
-        SmartDashboard.putData("Scheduler", CommandScheduler.getInstance());
     }
 
     @Override
